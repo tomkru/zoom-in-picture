@@ -167,6 +167,13 @@ body.editing #panel, body.editing #hint { display: none; }
 }
 #loading.gone { opacity: 0; pointer-events: none; }
 
+/* phones and tablets: only the picture and the edit button */
+@media (max-width: 640px), ((pointer: coarse) and (max-width: 1024px)) {
+  #panel, #minimap, #crumbs, #hint, #labels,
+  #nav button:not(#btn-edit) { display: none !important; }
+  #nav { right: 12px; bottom: 16px; }
+}
+
 @media (max-width: 640px) {
   #crumbs { font-size: 18px; top: 10px; left: 12px; right: 12px; }
   #panel { left: 10px; right: 10px; bottom: 74px; width: auto; padding: 12px 14px; transform: none; }

@@ -253,6 +253,8 @@
   const cam = { s: 1, cx: 0.5, cy: 0.3 };
   const tgt = { s: 1, cx: 0.5, cy: 0.3 };
   let anchor = null;   // world point kept under a screen point while a zoom animates
+  const RATE = 12;     // camera easing per second; lower is slower
+  let animRate = RATE;
 
   function rectOf(node, c = cam) {
     const w = node.world;
@@ -336,6 +338,7 @@
     tgt.cy = wy - (my - vh / 2) / tgt.s;
     clampTarget(wx, wy);
     anchor = { wx, wy, sx: mx, sy: my };
+    animRate = RATE;
   }
   function panBy(dx, dy) {
     tgt.cx -= dx / tgt.s; tgt.cy -= dy / tgt.s;
@@ -343,9 +346,10 @@
     if (anchor) { anchor.sx += dx; anchor.sy += dy; }
     clampTarget();
   }
-  function flyTo(node, margin = 0.9) {
+  function flyTo(node, margin = 0.9, rate = RATE) {
     if (!node) return;
     anchor = null;
+    animRate = rate;
     Object.assign(tgt, fitCam(node, margin));
     clampTarget();
   }
@@ -621,7 +625,7 @@
     const ls = Math.log(cam.s), lt = Math.log(tgt.s);
     const converged = Math.abs(lt - ls) < 1e-4 && Math.abs(tgt.cx - cam.cx) * cam.s < 0.05 && Math.abs(tgt.cy - cam.cy) * cam.s < 0.05;
     if (!converged) {
-      const k = 1 - Math.exp(-dt * 12);
+      const k = 1 - Math.exp(-dt * animRate);
       cam.s = Math.exp(ls + (lt - ls) * k);
       if (anchor) {
         // Keep the point under the cursor fixed while the scale eases; the offset is whatever
@@ -638,6 +642,7 @@
     } else if (cam.s !== tgt.s || cam.cx !== tgt.cx || cam.cy !== tgt.cy) {
       cam.s = tgt.s; cam.cx = tgt.cx; cam.cy = tgt.cy;
       anchor = null;
+      animRate = RATE;
       dirty = true;
     }
     // Render at 1x while the camera moves, at full retina resolution once it settles.
@@ -878,7 +883,7 @@
 
   function step(dir) {
     const i = nodes.indexOf(activeNode) + dir;
-    if (i >= 0 && i < nodes.length) flyTo(nodes[i]);
+    if (i >= 0 && i < nodes.length) flyTo(nodes[i], 0.9, RATE / 2);   // a slower, longer glide between paintings
   }
   $('btn-prev').onclick = () => step(-1);
   $('btn-next').onclick = () => step(1);
