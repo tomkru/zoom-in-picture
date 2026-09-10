@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>The Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="labels"></div>
+  <div id="grain"></div>
+  <div id="vignette"></div>
+
+  <nav id="crumbs" aria-label="Where you are"></nav>
+  <canvas id="minimap" title="Click or drag to move around"></canvas>
+
+  <aside id="panel">
+    <h1 id="panel-title"></h1>
+    <p id="panel-sub"></p>
+    <p id="panel-body"></p>
+  </aside>
+
+  <div id="nav">
+    <button id="btn-prev" title="Previous (←)">‹</button>
+    <button id="btn-up" title="Zoom out (Esc)">↖</button>
+    <button id="btn-home" title="Back to the map (Home)">⌂</button>
+    <button id="btn-next" title="Next (→)">›</button>
+    <button id="btn-edit" title="Edit the map (E)">✎</button>
+    <button id="btn-help" title="Keys (?)">?</button>
+  </div>
+
+  <div id="hint">pinch to zoom in · two fingers to wander · click a place to single it out</div>
+
+  <aside id="editor" hidden>
+    <h2>Editing</h2>
+    <p id="ed-path" class="ed-path"></p>
+    <label>Title <input id="ed-title" type="text"></label>
+    <label>Subtitle <input id="ed-subtitle" type="text"></label>
+    <label>Text <textarea id="ed-body" rows="4"></textarea></label>
+    <div class="ed-row ed-color-row">
+      <label class="inline">Text colour <input id="ed-color" type="color" value="#f6efe3"></label>
+      <button id="ed-color-reset" title="Back to the default cream">Default</button>
+    </div>
+    <p id="ed-kind" class="ed-hint"></p>
+    <div id="ed-reveal-row">
+      <label>Appears when it fills <span id="ed-reveal-val">30%</span> of the screen
+        <input id="ed-reveal" type="range" min="3" max="100" step="1"></label>
+      <button id="ed-reveal-now" title="Zoom to where this painting should start to appear, then click">Use current zoom</button>
+    </div>
+    <p id="ed-zoom" class="ed-hint"></p>
+    <div class="ed-row">
+      <button id="ed-image">Replace photo</button>
+      <button id="ed-download" title="Save this area at full resolution, repaint it with more detail, then Replace photo">Download area</button>
+      <button id="ed-delete" class="danger">Delete</button>
+    </div>
+    <h3>Inside <span id="ed-parent"></span></h3>
+    <ul id="ed-children"></ul>
+    <button id="ed-add-cutout" class="wide">+ Add a cutout here</button>
+    <button id="ed-add" class="wide">+ Add a photo here</button>
+    <p class="ed-hint">A cutout shows the same picture, sharper, with its own text — download the area, repaint it with the details you want, and replace the photo. Drag to move; drag the dots to reshape (double-click an edge to add a dot, a dot to remove it); the square outside the corner scales it (Shift keeps proportions); Shift-drag inside to choose the crop.</p>
+    <p id="ed-status"></p>
+    <input type="file" id="ed-file" accept="image/*" hidden>
+  </aside>
+
+  <div id="help" hidden>
+    <h2>Keys</h2>
+    <dl>
+      <dt>pinch / ⌘ scroll</dt><dd>zoom</dd>
+      <dt>two-finger scroll / drag</dt><dd>look around</dd>
+      <dt>minimap</dt><dd>click or drag to jump</dd>
+      <dt>click a spot</dt><dd>single it out (click again or Esc to undo)</dd>
+      <dt>double-click a spot</dt><dd>go there</dd>
+      <dt>← →</dt><dd>previous / next painting</dd>
+      <dt>Esc / ↑</dt><dd>zoom out one level</dd>
+      <dt>↓</dt><dd>into the first spot</dd>
+      <dt>Home</dt><dd>back to the map</dd>
+      <dt>+ −</dt><dd>zoom</dd>
+      <dt>E</dt><dd>edit the map</dd>
+    </dl>
+  </div>
+
+  <div id="toast" hidden></div>
+  <div id="loading"><span>painting…</span></div>
+
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

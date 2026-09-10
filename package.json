@@ -1,0 +1,8 @@
+{
+  "name": "zoom-in-picture",
+  "private": true,
+  "scripts": {
+    "serve": "node server.js",
+    "cutout": "swiftc -O -o /tmp/zoom-cutout tools/cutout.swift && /tmp/zoom-cutout"
+  }
+}
