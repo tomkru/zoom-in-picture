@@ -929,6 +929,8 @@
   let adminKey = '';
   try { adminKey = localStorage.getItem('adminKey') || ''; } catch (e) { /* storage blocked */ }
   ed.key.value = adminKey;
+  const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  ed.keyRow.hidden = isLocal;   // the live site needs the key; the local server does not
   ed.key.oninput = () => {
     adminKey = ed.key.value.trim();
     try { localStorage.setItem('adminKey', adminKey); } catch (e) { /* ignore */ }
@@ -1044,7 +1046,7 @@
         if (!r.ok) throw new Error(r.status);
         ed.status.textContent = 'saved';
       } catch (e) {
-        ed.status.textContent = 'not saved — is the server running? (npm run serve)';
+        ed.status.textContent = isLocal ? 'not saved — is the server running? (npm run serve)' : `not saved — server error ${e.message}, try reloading the page`;
       }
     }, 600);
   }
