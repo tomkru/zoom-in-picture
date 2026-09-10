@@ -883,7 +883,7 @@
 
   function step(dir) {
     const i = nodes.indexOf(activeNode) + dir;
-    if (i >= 0 && i < nodes.length) flyTo(nodes[i], 0.9, RATE / 2);   // a slower, longer glide between paintings
+    if (i >= 0 && i < nodes.length) flyTo(nodes[i], 0.9, RATE / 3);   // a slower, longer glide between paintings
   }
   $('btn-prev').onclick = () => step(-1);
   $('btn-next').onclick = () => step(1);
