@@ -255,6 +255,7 @@
   let anchor = null;   // world point kept under a screen point while a zoom animates
   const RATE = 12;     // camera easing per second; lower is slower
   let animRate = RATE;
+  let tween = null;    // a timed flight: { from, to, t0, ms } — used for the prev/next glide
 
   function rectOf(node, c = cam) {
     const w = node.world;
@@ -339,19 +340,22 @@
     clampTarget(wx, wy);
     anchor = { wx, wy, sx: mx, sy: my };
     animRate = RATE;
+    tween = null;
   }
   function panBy(dx, dy) {
+    tween = null;
     tgt.cx -= dx / tgt.s; tgt.cy -= dy / tgt.s;
     cam.cx -= dx / cam.s; cam.cy -= dy / cam.s;
     if (anchor) { anchor.sx += dx; anchor.sy += dy; }
     clampTarget();
   }
-  function flyTo(node, margin = 0.9, rate = RATE) {
+  function flyTo(node, margin = 0.9, ms = 0) {
     if (!node) return;
     anchor = null;
-    animRate = rate;
+    animRate = RATE;
     Object.assign(tgt, fitCam(node, margin));
     clampTarget();
+    tween = ms ? { from: { ...cam }, to: { ...tgt }, t0: performance.now(), ms } : null;
   }
 
   // ───────────────── drawing ─────────────────
@@ -624,7 +628,16 @@
     lastT = t;
     const ls = Math.log(cam.s), lt = Math.log(tgt.s);
     const converged = Math.abs(lt - ls) < 1e-4 && Math.abs(tgt.cx - cam.cx) * cam.s < 0.05 && Math.abs(tgt.cy - cam.cy) * cam.s < 0.05;
-    if (!converged) {
+    if (tween) {
+      // timed glide with a gentle ease in and out
+      const u = Math.min(1, (t - tween.t0) / tween.ms), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+      cam.s = Math.exp(Math.log(tween.from.s) + (Math.log(tween.to.s) - Math.log(tween.from.s)) * e);
+      cam.cx = tween.from.cx + (tween.to.cx - tween.from.cx) * e;
+      cam.cy = tween.from.cy + (tween.to.cy - tween.from.cy) * e;
+      if (u >= 1) tween = null;
+      lastMove = t;
+      dirty = true;
+    } else if (!converged) {
       const k = 1 - Math.exp(-dt * animRate);
       cam.s = Math.exp(ls + (lt - ls) * k);
       if (anchor) {
@@ -883,7 +896,7 @@
 
   function step(dir) {
     const i = nodes.indexOf(activeNode) + dir;
-    if (i >= 0 && i < nodes.length) flyTo(nodes[i], 0.9, RATE / 3);   // a slower, longer glide between paintings
+    if (i >= 0 && i < nodes.length) flyTo(nodes[i], 0.9, 2500);   // a slow 2.5 s glide between paintings
   }
   $('btn-prev').onclick = () => step(-1);
   $('btn-next').onclick = () => step(1);
