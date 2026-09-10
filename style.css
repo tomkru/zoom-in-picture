@@ -169,9 +169,10 @@ body.editing #panel, body.editing #hint { display: none; }
 
 /* phones and tablets: only the picture and the edit button */
 @media (max-width: 640px), ((pointer: coarse) and (max-width: 1024px)) {
-  #panel, #minimap, #crumbs, #hint, #labels,
+  #panel, #crumbs, #hint, #labels,
   #nav button:not(#btn-edit) { display: none !important; }
   #nav { right: 12px; bottom: 16px; }
+  #minimap { top: 12px; right: 12px; opacity: 0.85; transform: none; width: 150px; height: 100px; }
 }
 
 @media (max-width: 640px) {
@@ -182,7 +183,6 @@ body.editing #panel, body.editing #hint { display: none; }
   #nav { right: 10px; bottom: 16px; }
   #nav button { width: 38px; height: 38px; }
   #hint { display: none; }
-  #minimap { width: 120px; height: 80px; top: 44px; right: 10px; }
   #editor { left: 10px; right: 10px; width: auto; top: 50px; bottom: 70px; }
   #help { right: 10px; left: 10px; width: auto; bottom: 64px; }
 }
