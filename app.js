@@ -683,8 +683,10 @@
 
   (async () => {
     try {
-      const r = await fetch('content.json', { cache: 'no-store' });
-      if (!r.ok) throw new Error(`content.json: ${r.status}`);
+      // the live map from the server (saved edits), falling back to the file next to the page
+      let r = await fetch('/api/content', { cache: 'no-store' }).catch(() => null);
+      if (!r || !r.ok) r = await fetch('content.json', { cache: 'no-store' });
+      if (!r.ok) throw new Error(`content: ${r.status}`);
       ROOT = await r.json();
     } catch (e) {
       loadingText.textContent = 'could not load content.json — run: npm run serve';
@@ -921,7 +923,23 @@
     add: $('ed-add'), addCut: $('ed-add-cutout'), status: $('ed-status'), file: $('ed-file'), kind: $('ed-kind'),
     reveal: $('ed-reveal'), revealVal: $('ed-reveal-val'), revealNow: $('ed-reveal-now'), revealRow: $('ed-reveal-row'),
     zoom: $('ed-zoom'), color: $('ed-color'), colorReset: $('ed-color-reset'),
+    keyRow: $('ed-key-row'), key: $('ed-key'),
   };
+  // Saving on the deployed site needs the admin key (set in Vercel); locally the server needs none.
+  let adminKey = '';
+  try { adminKey = localStorage.getItem('adminKey') || ''; } catch (e) { /* storage blocked */ }
+  ed.key.value = adminKey;
+  ed.key.oninput = () => {
+    adminKey = ed.key.value.trim();
+    try { localStorage.setItem('adminKey', adminKey); } catch (e) { /* ignore */ }
+    if (adminKey) save();
+  };
+  const adminHeaders = extra => Object.assign(adminKey ? { 'x-admin-key': adminKey } : {}, extra);
+  function needKey(msg) {
+    ed.keyRow.hidden = false;
+    ed.status.textContent = msg;
+    ed.key.focus();
+  }
   let zoomText = '';
   function updateZoomReadout() {
     const fit = Math.min(vw / ROOT.world.w, vh / ROOT.world.h);
@@ -1021,16 +1039,21 @@
     ed.status.textContent = 'saving…';
     saveTimer = setTimeout(async () => {
       try {
-        const r = await fetch('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(serialize(ROOT)) });
+        const r = await fetch('/api/save', { method: 'POST', headers: adminHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(serialize(ROOT)) });
+        if (r.status === 401) return needKey('not saved — enter the admin key below');
         if (!r.ok) throw new Error(r.status);
         ed.status.textContent = 'saved';
       } catch (e) {
-        ed.status.textContent = 'not saved — start the server with: npm run serve';
+        ed.status.textContent = 'not saved — is the server running? (npm run serve)';
       }
     }, 600);
   }
   async function upload(file) {
-    const r = await fetch('/api/upload?name=' + encodeURIComponent(file.name), { method: 'POST', body: file });
+    const r = await fetch('/api/upload?name=' + encodeURIComponent(file.name), {
+      method: 'POST', headers: adminHeaders({ 'Content-Type': 'application/octet-stream' }), body: file,
+    });
+    if (r.status === 401) { needKey('upload needs the admin key — enter it below and try again'); throw new Error('401'); }
+    if (r.status === 413) throw new Error('too large');
     if (!r.ok) throw new Error(r.status);
     return (await r.json()).path;
   }
@@ -1122,7 +1145,8 @@
       else await replaceImage(selected || activeNode, path);
       save();
     } catch (e) {
-      ed.status.textContent = 'upload failed — start the server with: npm run serve';
+      if (e.message === '401') return;
+      ed.status.textContent = e.message === 'too large' ? 'upload failed — photos must be under 4.5 MB on the live site' : 'upload failed — is the server running? (npm run serve)';
     }
   };
   ed.del.onclick = async () => {

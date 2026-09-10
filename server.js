@@ -1,4 +1,5 @@
-// Static server + admin API. Run with: node server.js  (or npm run serve)
+// Local static server + admin API (no key needed). Run with: node server.js  (or npm run serve)
+// On Vercel the same API is served by api/*.js backed by Blob storage.
 //   POST /api/save            body: JSON tree      -> writes content.json
 //   POST /api/upload?name=x   body: image bytes    -> writes images/<name>, returns { path }
 const http = require('http');
@@ -42,6 +43,9 @@ http.createServer(async (req, res) => {
       fs.mkdirSync(path.join(ROOT, 'images'), { recursive: true });
       fs.writeFileSync(path.join(ROOT, 'images', name), await readBody(req));
       return send(res, 200, JSON.stringify({ path: 'images/' + name }), 'application/json');
+    }
+    if (req.method === 'GET' && url.pathname === '/api/content') {
+      return send(res, 200, fs.readFileSync(path.join(ROOT, 'content.json')), 'application/json');
     }
     if (req.method !== 'GET') return send(res, 405, 'method not allowed');
     let file = path.normalize(decodeURIComponent(url.pathname)).replace(/^(\.\.[/\\])+/, '');

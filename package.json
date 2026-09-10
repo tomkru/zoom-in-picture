@@ -4,5 +4,8 @@
   "scripts": {
     "serve": "node server.js",
     "cutout": "swiftc -O -o /tmp/zoom-cutout tools/cutout.swift && /tmp/zoom-cutout"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
   }
 }
