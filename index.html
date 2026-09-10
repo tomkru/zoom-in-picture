@@ -38,6 +38,9 @@
   <aside id="editor" hidden>
     <h2>Editing</h2>
     <p id="ed-path" class="ed-path"></p>
+    <div id="ed-key-row" hidden>
+      <label>Admin key (needed to save on the live site) <input id="ed-key" type="password" autocomplete="off" placeholder="paste the ADMIN_KEY from Vercel"></label>
+    </div>
     <label>Title <input id="ed-title" type="text"></label>
     <label>Subtitle <input id="ed-subtitle" type="text"></label>
     <label>Text <textarea id="ed-body" rows="4"></textarea></label>
@@ -63,9 +66,6 @@
     <button id="ed-add" class="wide">+ Add a photo here</button>
     <p class="ed-hint">A cutout shows the same picture, sharper, with its own text — download the area, repaint it with the details you want, and replace the photo. Drag to move; drag the dots to reshape (double-click an edge to add a dot, a dot to remove it); the square outside the corner scales it (Shift keeps proportions); Shift-drag inside to choose the crop.</p>
     <p id="ed-status"></p>
-    <div id="ed-key-row" hidden>
-      <label>Admin key <input id="ed-key" type="password" autocomplete="off" placeholder="from Vercel → ADMIN_KEY"></label>
-    </div>
     <input type="file" id="ed-file" accept="image/*" hidden>
   </aside>
 

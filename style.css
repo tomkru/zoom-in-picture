@@ -125,6 +125,9 @@ body.editing #minimap { display: none; }
 #editor button.wide { width: 100%; margin-top: 8px; }
 #editor .ed-row { display: flex; gap: 8px; margin-top: 8px; }
 #ed-reveal-row[hidden] { display: none; }
+#ed-key-row { margin: 0 0 10px; padding: 8px 10px; background: rgba(163,58,42,0.08); border: 1px dashed rgba(163,58,42,0.45); border-radius: 4px; }
+#ed-key-row[hidden] { display: none; }
+#ed-key-row label { margin: 0; }
 #editor .ed-color-row { align-items: center; }
 #editor label.inline { display: flex; align-items: center; gap: 8px; margin: 0; flex: 1; }
 #editor input[type=color] { width: 44px; height: 30px; padding: 2px; margin: 0; border-radius: 4px; cursor: pointer; }
