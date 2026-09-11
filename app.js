@@ -701,11 +701,17 @@
 
   (async () => {
     try {
-      // the live map from the server (saved edits), falling back to the file next to the page
-      let r = await fetch('/api/content', { cache: 'no-store' }).catch(() => null);
-      if (!r || !r.ok) r = await fetch('content.json', { cache: 'no-store' });
-      if (!r.ok) throw new Error(`content: ${r.status}`);
-      ROOT = await r.json();
+      if (window.__CONTENT__) {
+        // a self-contained export (see tools/export-static.js): everything is inlined, nothing can be saved
+        ROOT = window.__CONTENT__;
+        document.body.classList.add('static');
+      } else {
+        // the live map from the server (saved edits), falling back to the file next to the page
+        let r = await fetch('/api/content', { cache: 'no-store' }).catch(() => null);
+        if (!r || !r.ok) r = await fetch('content.json', { cache: 'no-store' });
+        if (!r.ok) throw new Error(`content: ${r.status}`);
+        ROOT = await r.json();
+      }
     } catch (e) {
       loadingText.textContent = 'could not load content.json — run: npm run serve';
       throw e;

@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "serve": "node server.js",
-    "cutout": "swiftc -O -o /tmp/zoom-cutout tools/cutout.swift && /tmp/zoom-cutout"
+    "cutout": "swiftc -O -o /tmp/zoom-cutout tools/cutout.swift && /tmp/zoom-cutout",
+    "export": "node tools/export-static.js"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.0"

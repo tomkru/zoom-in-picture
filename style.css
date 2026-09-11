@@ -140,6 +140,7 @@ body.editing #minimap { display: none; }
 #ed-status { margin: 8px 0 0; font-family: var(--hand); font-size: 15px; color: var(--ink-soft); min-height: 1.2em; }
 #nav button.on { background: var(--ink); color: var(--paper-2); }
 body.editing #panel, body.editing #hint { display: none; }
+body.static #btn-edit { display: none; }
 
 #help {
   position: fixed; right: 20px; bottom: 80px; z-index: 6;
