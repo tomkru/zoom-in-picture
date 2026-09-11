@@ -1,8 +1,8 @@
 // Builds dist/the-map.html: one self-contained file (content, photos, styles and script inlined)
 // that runs offline, e.g. in a Notion HTML block, where no outside requests are allowed.
-//   npm run export            uses content.json from this folder
-//   npm run export -- --live  uses what is saved on the live site (its /api/content)
-// Photos are downscaled for size (uses Pillow via python3, or macOS `sips`; otherwise the originals).
+//   npm run export             uses content.json from this folder, photos at full size
+//   npm run export -- --live   uses what is saved on the live site (its /api/content)
+//   npm run export -- --small  downscales photos (Pillow via python3, or macOS `sips`) for a lighter file
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -15,6 +15,7 @@ const JPEG_QUALITY = 72;
 
 async function main() {
   const live = process.argv.includes('--live');
+  const small = process.argv.includes('--small');
   const tree = live ? await (await fetch(LIVE)).json() : JSON.parse(fs.readFileSync(path.join(ROOT, 'content.json'), 'utf8'));
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'map-export-'));
   let total = 0;
@@ -23,7 +24,7 @@ async function main() {
     if (node.image && !node.cutout) {
       const buf = await load(node.image);
       const ext = (node.image.split('?')[0].match(/\.([a-z0-9]+)$/i) || [, 'jpg'])[1].toLowerCase();
-      const out = shrink(buf, ext, isRoot ? MAX_W.root : MAX_W.other, tmp);
+      const out = small ? shrink(buf, ext, isRoot ? MAX_W.root : MAX_W.other, tmp) : { buf, mime: mimeOf(ext), note: 'full size' };
       total += out.buf.length;
       node.image = `data:${out.mime};base64,${out.buf.toString('base64')}`;
       process.stdout.write(`  ${node.id.padEnd(16)} ${(out.buf.length / 1024).toFixed(0).padStart(6)} KB ${out.note}\n`);
@@ -45,6 +46,8 @@ async function main() {
   fs.rmSync(tmp, { recursive: true, force: true });
   console.log(`\nwrote dist/the-map.html (${(fs.statSync(file).size / 1048576).toFixed(1)} MB, photos ${(total / 1048576).toFixed(1)} MB)`);
 }
+
+const mimeOf = ext => ({ jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' }[ext] || 'image/jpeg');
 
 async function load(src) {
   if (/^https?:/.test(src)) return Buffer.from(await (await fetch(src)).arrayBuffer());
