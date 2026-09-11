@@ -726,6 +726,11 @@
     ]);
     layoutAll();
     await Promise.all(nodes.map(compose));
+    if (window.__CONTENT__) {
+      // read-only export: the decoded photos are only needed where cutouts read from them
+      const hasCutoutBelow = n => n.children.some(c => c.cutout || hasCutoutBelow(c));
+      for (const n of nodes) if (!hasCutoutBelow(n)) delete sources[n.id];
+    }
     start();
   })();
 
