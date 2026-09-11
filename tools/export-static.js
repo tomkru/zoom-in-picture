@@ -2,7 +2,8 @@
 // that runs offline, e.g. in a Notion HTML block, where no outside requests are allowed.
 //   npm run export             uses content.json from this folder, photos at full size
 //   npm run export -- --live   uses what is saved on the live site (its /api/content)
-//   npm run export -- --small  downscales photos (Pillow via python3, or macOS `sips`) for a lighter file
+//   npm run export -- --small  downscales photos (Pillow via python3, or macOS `sips`) into dist/the-map-small.html,
+//                              kept under Notion's 5 MiB per-file limit on free workspaces
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -10,8 +11,8 @@ const { execFileSync } = require('child_process');
 
 const ROOT = path.join(__dirname, '..');
 const LIVE = 'https://zoom-in-picture.vercel.app/api/content';
-const MAX_W = { root: 2560, other: 1400 };
-const JPEG_QUALITY = 72;
+const MAX_W = { root: 2400, other: 1300 };   // --small: fits Notion's 5 MiB free-plan file limit
+const JPEG_QUALITY = 68;
 
 async function main() {
   const live = process.argv.includes('--live');
@@ -41,10 +42,10 @@ async function main() {
   html = html.replace('<script src="app.js"></script>',
     `<script>window.__CONTENT__ = ${JSON.stringify(tree)};</script>\n  <script>\n${js.replace(/<\/script/g, '<\\/script')}\n</script>`);
   fs.mkdirSync(path.join(ROOT, 'dist'), { recursive: true });
-  const file = path.join(ROOT, 'dist', 'the-map.html');
+  const file = path.join(ROOT, 'dist', small ? 'the-map-small.html' : 'the-map.html');
   fs.writeFileSync(file, html);
   fs.rmSync(tmp, { recursive: true, force: true });
-  console.log(`\nwrote dist/the-map.html (${(fs.statSync(file).size / 1048576).toFixed(1)} MB, photos ${(total / 1048576).toFixed(1)} MB)`);
+  console.log(`\nwrote ${path.relative(ROOT, file)} (${(fs.statSync(file).size / 1048576).toFixed(2)} MiB, photos ${(total / 1048576).toFixed(2)} MiB)`);
 }
 
 const mimeOf = ext => ({ jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' }[ext] || 'image/jpeg');
